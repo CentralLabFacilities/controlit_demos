@@ -12,6 +12,9 @@ import rospy
 
 from std_msgs.msg import Float64MultiArray, MultiArrayDimension, Int32
 
+NUM_DOFS = 16
+SENSING_MODE = 1
+
 class Snapshot:
     def __init__(self, rightHandCartesian, leftHandCartesian, rightHandOrientation, leftHandOrientation, posture):
         self.rightHandCartesian = rightHandCartesian
@@ -57,10 +60,12 @@ class TakeSnapshot:
         # self.leftOrientationTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/LeftHandOrientation/actualHeading", Float64MultiArray, self.leftOrientationTaskActualCallback)
 
         # Create the ROS topic publishers
-        self.rightCartesianTaskEnablePublisher = rospy.Publisher("/dreamer_controller/RightHandPosition/enabled", Int32, queue_size=1)
-        self.leftCartesianTaskEnablePublisher = rospy.Publisher("/dreamer_controller/LeftHandPosition/enabled", Int32, queue_size=1)
-        self.rightOrientationTaskEnablePublisher = rospy.Publisher("/dreamer_controller/RightHandOrientation/enabled", Int32, queue_size=1)
-        self.leftOrientationTaskEnablePublisher = rospy.Publisher("/dreamer_controller/LeftHandOrientation/enabled", Int32, queue_size=1)
+        self.rightCartesianTaskEnablePublisher = rospy.Publisher("/dreamer_controller/RightHandPosition/enableState", Int32, queue_size=1)
+        self.leftCartesianTaskEnablePublisher = rospy.Publisher("/dreamer_controller/LeftHandPosition/enableState", Int32, queue_size=1)
+        self.rightOrientationTaskEnablePublisher = rospy.Publisher("/dreamer_controller/RightHandOrientation/enableState", Int32, queue_size=1)
+        self.leftOrientationTaskEnablePublisher = rospy.Publisher("/dreamer_controller/LeftHandOrientation/enableState", Int32, queue_size=1)
+        self.postureTaskKpPublisher = rospy.Publisher("/dreamer_controller/Posture/kp", Float64MultiArray, queue_size=1)
+        self.postureTaskKdPublisher = rospy.Publisher("/dreamer_controller/Posture/kd", Float64MultiArray, queue_size=1)
 
     def postureTaskActualCallback(self, msg):
         self.currentPosture = msg.data
@@ -77,10 +82,10 @@ class TakeSnapshot:
     def leftOrientationTaskActualCallback(self, msg):
         self.currentLeftOrientation = msg.data
 
-    def run(self):
-        """
-        Runs the snapshot
-        """
+    def connectAndEnableTasks(self):
+        '''
+        Connect to the tasks and ensure they are enabled.
+        '''
 
         pauseCount = 0
         printWarning = False
@@ -88,18 +93,24 @@ class TakeSnapshot:
             self.rightCartesianTaskEnablePublisher.get_num_connections() == 0 or \
             self.leftCartesianTaskEnablePublisher.get_num_connections() == 0 or \
             self.rightOrientationTaskEnablePublisher.get_num_connections() == 0 or \
-            self.leftOrientationTaskEnablePublisher.get_num_connections() == 0):
+            self.leftOrientationTaskEnablePublisher.get_num_connections() == 0 or \
+            self.postureTaskKpPublisher.get_num_connections() == 0 or \
+            self.postureTaskKdPublisher.get_num_connections() == 0):
 
             if printWarning:
                 print "Waiting on connection to:"
                 if self.rightCartesianTaskEnablePublisher.get_num_connections() == 0:
-                    print "  - right cartesian"
+                    print "  - right cartesian task"
                 if self.leftCartesianTaskEnablePublisher.get_num_connections() == 0:
-                    print "  - left cartesian"
+                    print "  - left cartesian task"
                 if self.rightOrientationTaskEnablePublisher.get_num_connections() == 0:
-                    print "  - right orientation"
+                    print "  - right orientation task"
                 if self.leftOrientationTaskEnablePublisher.get_num_connections() == 0:
-                    print "  - left orientation"
+                    print "  - left orientation task"
+                if self.postureTaskKpPublisher.get_num_connections() == 0:
+                    print "  - posture task Kp"
+                if self.postureTaskKdPublisher.get_num_connections() == 0:
+                    print "  - posture task Kd"
                     
             time.sleep(0.5)
             pauseCount = pauseCount + 1
@@ -108,17 +119,19 @@ class TakeSnapshot:
                 printWarning = True
 
         if rospy.is_shutdown():
-            return
+            return False
 
         # Enable the Cartesian position and orientation tasks
         enableMsg = Int32()
-        enableMsg.data = 1        
+        enableMsg.data = SENSING_MODE      
         self.rightCartesianTaskEnablePublisher.publish(enableMsg)
         self.leftCartesianTaskEnablePublisher.publish(enableMsg)
         self.rightOrientationTaskEnablePublisher.publish(enableMsg)
         self.leftOrientationTaskEnablePublisher.publish(enableMsg)
 
+        return not rospy.is_shutdown()
 
+    def awaitData(self):
         # Wait for connection to ControlIt!
         pauseCount = 0
         printWarning = False
@@ -146,7 +159,59 @@ class TakeSnapshot:
                 print "Waiting for data from ControlIt!..."
                 printWarning = True
 
-        if rospy.is_shutdown():
+        return not rospy.is_shutdown()
+
+    def enableGravityCompMode(self):
+        index = raw_input("Put robot into gravity compensation mode? Y/n\n")
+
+        if index == "N" or index == "n":
+            return True
+        else:
+            # Define the dimensions of the message
+            dim = MultiArrayDimension()
+            dim.size = NUM_DOFS
+            dim.label = "goalMsg"
+            dim.stride = 1
+
+            kpMsg = Float64MultiArray()
+            for ii in range(0, NUM_DOFS):
+                kpMsg.data.append(0)         # Kp gains for gravity compensation mode
+            kpMsg.layout.dim.append(dim)
+            kpMsg.layout.data_offset = 0
+
+            print "Setting posture task Kp gains to be zero..."
+            self.postureTaskKpPublisher.publish(kpMsg)
+
+            kdMsg = Float64MultiArray()
+            for ii in range(0, NUM_DOFS):
+                kdMsg.data.append(5)         # Kd gains for gravity compensation mode
+            kdMsg.layout.dim.append(dim)
+            kdMsg.layout.data_offset = 0
+
+            print "Setting posture task Kd gains to be zero..."
+            self.postureTaskKdPublisher.publish(kdMsg)
+
+            print "Done setting robot into gravity compensation mode."
+
+        return not rospy.is_shutdown()
+
+    def run(self):
+        """
+        Runs the snapshot
+        """
+
+        if not self.connectAndEnableTasks():
+            return
+
+        if not self.awaitData():
+            return
+
+        if not self.enableGravityCompMode():
+            return
+
+        index = raw_input("Continue? Y/n\n")
+
+        if index == "N" or index == "n":
             return
 
         # Wait for robot to be placed into desired position
@@ -239,7 +304,6 @@ class TakeSnapshot:
 
         print result
 
-
 # Main method
 if __name__ == "__main__":
 
@@ -247,3 +311,6 @@ if __name__ == "__main__":
 
     snapshot = TakeSnapshot()
     snapshot.run()
+
+    print "TakeSnapshot: Done. Waiting until ctrl+c is hit..."
+    rospy.spin()  # just to prevent this node from exiting
