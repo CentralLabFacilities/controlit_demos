@@ -9,7 +9,7 @@ import math
 import rospy
 
 from std_msgs.msg import Float64, Float64MultiArray, MultiArrayDimension, Bool, Int32
-from dreamer_controlit_common.msg import QuatInterpMsg
+from dreamer_controlit_demos.msg import QuatInterpMsg
 
 import numpy as np
 from scipy.interpolate import interp1d
@@ -23,7 +23,7 @@ import TrajectoryGeneratorCubicSpline
 ENABLE_USER_PROMPTS = False
 
 NUM_CARTESIAN_DOFS = 3 # Cartesian goal is x, y, z
-# NUM_ORIENTATION_DOFS = 3 
+# NUM_ORIENTATION_DOFS = 3
 NUM_ROBOT_DOFS = 16
 
 class DreamerInterface:
@@ -55,7 +55,7 @@ class DreamerInterface:
             self.rightHandCartesianGoalMsg.data.append(0)
         self.rightHandCartesianGoalMsg.layout.dim.append(rightHandCartesianGoalMsgDim)
         self.rightHandCartesianGoalMsg.layout.data_offset = 0
-        
+
         #-----------------------------------------------------------------------------'
 
         leftHandCartesianGoalMsgDim = MultiArrayDimension()
@@ -82,9 +82,9 @@ class DreamerInterface:
                 self.rightHandOrientationGoalMsg.data.append(0)
             self.rightHandOrientationGoalMsg.layout.dim.append(rightHandOrientationGoalMsgDim)
             self.rightHandOrientationGoalMsg.layout.data_offset = 0
-    
+
         #-----------------------------------------------------------------------------'
-        
+
             leftHandOrientationGoalMsgDim = MultiArrayDimension()
             leftHandOrientationGoalMsgDim.size = NUM_ORIENTATION_DOFS
             leftHandOrientationGoalMsgDim.label = "leftHandOrientationGoal"
@@ -95,12 +95,12 @@ class DreamerInterface:
                 self.leftHandOrientationGoalMsg.data.append(0)
             self.leftHandOrientationGoalMsg.layout.dim.append(leftHandOrientationGoalMsgDim)
             self.leftHandOrientationGoalMsg.layout.data_offset = 0
-        
+
         else:
             self.orientationUpdateMsg = QuatInterpMsg()
 
         #-----------------------------------------------------------------------------'
-        
+
         postureGoalMsgDim = MultiArrayDimension()
         postureGoalMsgDim.size = NUM_ROBOT_DOFS
         postureGoalMsgDim.label = "postureGoal"
@@ -124,7 +124,7 @@ class DreamerInterface:
         self.rightMiddleFingerCmdMsg.data = True # include middle finger in power grasp
 
         self.rightPinkyFingerCmdMsg = Bool()
-        self.rightPinkyFingerCmdMsg.data = True # include pinky finger in power grasp            
+        self.rightPinkyFingerCmdMsg.data = True # include pinky finger in power grasp
 
         self.leftGripperCmdMsg = Bool()
         self.leftGripperCmdMsg.data = False  # relax gripper
@@ -182,23 +182,23 @@ class DreamerInterface:
         self.postureTaskTarePublisher = rospy.Publisher("/dreamer_controller/Posture/tare", Int32, queue_size=1)
 
         self.rightCartesianTaskGoalPublisher = rospy.Publisher("/dreamer_controller/RightHandPosition/goalPosition", Float64MultiArray, queue_size=1)
-        self.rightCartesianTaskEnablePublisher = rospy.Publisher("/dreamer_controller/RightHandPosition/enabled", Int32, queue_size=1)
+        self.rightCartesianTaskEnablePublisher = rospy.Publisher("/dreamer_controller/RightHandPosition/enableState", Int32, queue_size=1)
         self.rightCartesianTaskTarePublisher = rospy.Publisher("/dreamer_controller/RightHandPosition/tare", Int32, queue_size=1)
 
         self.leftCartesianTaskGoalPublisher = rospy.Publisher("/dreamer_controller/LeftHandPosition/goalPosition", Float64MultiArray, queue_size=1)
-        self.leftCartesianTaskEnablePublisher = rospy.Publisher("/dreamer_controller/LeftHandPosition/enabled", Int32, queue_size=1)
+        self.leftCartesianTaskEnablePublisher = rospy.Publisher("/dreamer_controller/LeftHandPosition/enableState", Int32, queue_size=1)
         self.leftCartesianTaskTarePublisher = rospy.Publisher("/dreamer_controller/LeftHandPosition/tare", Int32, queue_size=1)
 
         if not self.useQuaternionControl:
             self.rightOrientationTaskGoalPublisher = rospy.Publisher("/dreamer_controller/RightHandOrientation/goalVector", Float64MultiArray, queue_size=1)
 
-        self.rightOrientationTaskEnablePublisher = rospy.Publisher("/dreamer_controller/RightHandOrientation/enabled", Int32, queue_size=1)
+        self.rightOrientationTaskEnablePublisher = rospy.Publisher("/dreamer_controller/RightHandOrientation/enableState", Int32, queue_size=1)
         self.rightOrientationTaskTarePublisher = rospy.Publisher("/dreamer_controller/RightHandOrientation/tare", Int32, queue_size=1)
 
         if not self.useQuaternionControl:
             self.leftOrientationTaskGoalPublisher = rospy.Publisher("/dreamer_controller/LeftHandOrientation/goalVector", Float64MultiArray, queue_size=1)
 
-        self.leftOrientationTaskEnablePublisher = rospy.Publisher("/dreamer_controller/LeftHandOrientation/enabled", Int32, queue_size=1)
+        self.leftOrientationTaskEnablePublisher = rospy.Publisher("/dreamer_controller/LeftHandOrientation/enableState", Int32, queue_size=1)
         self.leftOrientationTaskTarePublisher = rospy.Publisher("/dreamer_controller/LeftHandOrientation/tare", Int32, queue_size=1)
 
 
@@ -212,7 +212,7 @@ class DreamerInterface:
         self.selectPinkyFingerPublisher = rospy.Publisher("/dreamer_controller/controlit/rightHand/includeRightPinkyFinger", Bool, queue_size=1)
 
         self.leftGripperCmdPublisher = rospy.Publisher("/dreamer_controller/controlit/leftGripper/powerGrasp", Bool, queue_size=1)
-        
+
 
     def postureTaskActualCallback(self, msg):
         self.currentPosture = msg.data
@@ -278,7 +278,7 @@ class DreamerInterface:
                     print "Waiting on right orientation enable subscriber..."
                 if self.leftOrientationTaskEnablePublisher.get_num_connections() == 0:
                     print "Waiting on left orientation enable subscriber..."
-                    
+
             time.sleep(0.5)
             pauseCount = pauseCount + 1
             if pauseCount > 5 and not warningPrinted:
@@ -290,7 +290,7 @@ class DreamerInterface:
 
         # Enable the Cartesian position and orientation tasks
         enableMsg = Int32()
-        enableMsg.data = 1        
+        enableMsg.data = 2
         self.rightCartesianTaskEnablePublisher.publish(enableMsg)
         self.leftCartesianTaskEnablePublisher.publish(enableMsg)
         self.rightOrientationTaskEnablePublisher.publish(enableMsg)
@@ -458,7 +458,7 @@ class DreamerInterface:
                     self.orientationUpdateMsg.rhEnd.x = traj.rhOrientWP[startWPIndex + 1][1]
                     self.orientationUpdateMsg.rhEnd.y = traj.rhOrientWP[startWPIndex + 1][2]
                     self.orientationUpdateMsg.rhEnd.z = traj.rhOrientWP[startWPIndex + 1][3]
-                    
+
                     self.orientationUpdateMsg.rhProportion = segmentDeltaTime / segmentTotalTime
 
                     # print "DreamerInterface: followTrajectory: right proportion computation:\n"\
@@ -533,7 +533,7 @@ class DreamerInterface:
         self.leftCartesianTaskGoalPublisher.publish(self.leftHandCartesianGoalMsg)
 
     def closeRightHand(self, includePinky = True, includeMiddle = True, includeIndex = True):
-        
+
         self.rightPinkyFingerCmdMsg.data = includePinky
         self.rightMiddleFingerCmdMsg.data = includeMiddle
         self.rightIndexFingerCmdMsg.data = includeIndex
@@ -544,11 +544,11 @@ class DreamerInterface:
         self.selectIndexFingerPublisher.publish(self.rightIndexFingerCmdMsg)
 
         self.rightHandCmdPublisher.publish(self.rightHandCmdMsg)
-        
+
     def openRightHand(self):
         self.rightHandCmdMsg.data = False  # open hand
         self.rightHandCmdPublisher.publish(self.rightHandCmdMsg)
-        
+
 
     def closeLeftGripper(self):
         self.leftGripperCmdMsg.data = True # close the gripper
