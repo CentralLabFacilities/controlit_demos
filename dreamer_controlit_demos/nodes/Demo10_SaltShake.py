@@ -62,10 +62,10 @@ class EnablePowerGraspState(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing EnablePowerGraspState')
-        
+
         self.dreamerInterface.rightHandCmdMsg.data = True
         self.dreamerInterface.rightHandCmdPublisher.publish(self.dreamerInterface.rightHandCmdMsg)
-        
+
         rospy.sleep(5) # allow fingers to move
 
         if rospy.is_shutdown():
@@ -80,10 +80,10 @@ class DisablePowerGraspState(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing DisablePowerGraspState')
-        
+
         self.dreamerInterface.rightHandCmdMsg.data = False
         self.dreamerInterface.rightHandCmdPublisher.publish(self.dreamerInterface.rightHandCmdMsg)
-        
+
         rospy.sleep(5) # allow fingers to move
 
         if rospy.is_shutdown():
@@ -122,7 +122,7 @@ class Demo10_SaltShake:
         self.trajGoToReady.setInitRHOrientWP([1.0, 0.0, 0.0])
         self.trajGoToReady.setInitLHOrientWP([1.0, 0.0, 0.0])
         self.trajGoToReady.setInitPostureWP(DEFAULT_POSTURE)
-        
+
         self.trajGoToReady.addRHCartWP([0.05914076433495025, -0.26057331586469357, 0.8075152343995867])
         self.trajGoToReady.addRHCartWP([0.023313741346565105, -0.3573590975417546, 0.8907716749859689])
         self.trajGoToReady.addRHCartWP([0.007323613968634814, -0.5058796562308474, 0.9987523903297643])
@@ -188,7 +188,7 @@ class Demo10_SaltShake:
         # Left hand does not move
         self.trajGrabSalt.makeLHCartStatic(self.trajGoToReady)
         self.trajGrabSalt.makeLHOrientStatic(self.trajGoToReady)
-        
+
         # Specify the waypoints
         self.trajGrabSalt.addRHCartWP([0.1368682530366739, -0.4980039231047034, 1.3191871082797064])
         self.trajGrabSalt.addRHCartWP([0.13635589186985528, -0.4709988159760668, 1.2713945875976562])
@@ -204,27 +204,27 @@ class Demo10_SaltShake:
         self.trajGrabSalt.addRHOrientWP([0.09748668697686975, -0.9939307964130979, -0.050969773433858605])
         self.trajGrabSalt.addRHOrientWP([0.061417388747668604, -0.9958366630324049, -0.0673590745178568])
 
-        self.trajGrabSalt.addPostureWP([0.024744075530812384, 0.024744075530812384, 
+        self.trajGrabSalt.addPostureWP([0.024744075530812384, 0.024744075530812384,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.6602731008864706, 0.7636531673323284, 1.1499816915255239, 1.9680001903569746, 1.3350327338045107, -0.4098808309820463, 0.07155096651358149])
-        self.trajGrabSalt.addPostureWP([0.02413043876209492, 0.02413043876209492, 
+        self.trajGrabSalt.addPostureWP([0.02413043876209492, 0.02413043876209492,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.6306532370748459, 0.640196501475271, 0.9908681363733606, 2.0398781744713532, 1.7984430223746184, -0.4195716561325461, 0.10938188714847934])
-        self.trajGrabSalt.addPostureWP([0.023954504636184593, 0.023954504636184593, 
+        self.trajGrabSalt.addPostureWP([0.023954504636184593, 0.023954504636184593,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.2528283044280894, 0.241939899484367, 0.8466032549265826, 2.0229372230617706, 1.5757444609320181, -0.4533822239864415, 0.15511920253576847])
-        self.trajGrabSalt.addPostureWP([0.024084409232604593, 0.024084409232604593, 
+        self.trajGrabSalt.addPostureWP([0.024084409232604593, 0.024084409232604593,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.20400979762922297, 0.4250593848966316, 0.3112979683032229, 1.8255756906977358, 1.9461599805027823, -0.3014572383706713, 0.059457533050168286])
-        self.trajGrabSalt.addPostureWP([0.024299183898934384, 0.024299183898934384, 
+        self.trajGrabSalt.addPostureWP([0.024299183898934384, 0.024299183898934384,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.09254415118023684, 0.14865494896562292, 0.31045606636076456, 1.8108398106197838, 1.8654128823849236, -0.34956477431032085, 0.2563381314014863])
-        self.trajGrabSalt.addPostureWP([0.024468556080276375, 0.024468556080276375, 
+        self.trajGrabSalt.addPostureWP([0.024468556080276375, 0.024468556080276375,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.007657017204115373, 0.022047159014570564, 0.31124879227806, 1.7816278995681702, 1.7423174919204645, -0.34755920471176044, 0.2550035649062545])
-       
 
-        # ==============================================================================================        
+
+        # ==============================================================================================
         self.trajShakeSalt = Trajectory.Trajectory("ShakeSalt", TIME_SHAKE_SALT)
         self.trajShakeSalt.setPrevTraj(self.trajGrabSalt)
 
@@ -259,48 +259,48 @@ class Demo10_SaltShake:
         self.trajShakeSalt.addRHOrientWP([0.061160377708257746, -0.8670569220082821, 0.49444079746326264])
         self.trajShakeSalt.addRHOrientWP([0.15771779711212583, -0.9636644636800336, 0.2155826939120387])
         self.trajShakeSalt.addRHOrientWP([0.27370062774256604, -0.9617991235647599, 0.005514733301354368])
-        
-        self.trajShakeSalt.addPostureWP([0.02436080008470486, 0.02436080008470486, 
+
+        self.trajShakeSalt.addPostureWP([0.02436080008470486, 0.02436080008470486,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.009197597279545592, 0.003946761468741407, 0.3067225627169007, 1.7742975714881093, 1.696410190442201, -0.3576206152918874, 0.23577468382741087])
-        self.trajShakeSalt.addPostureWP([0.02450507257936768, 0.02450507257936768, 
+        self.trajShakeSalt.addPostureWP([0.02450507257936768, 0.02450507257936768,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.06704167487429545, 0.004358356402465086, 0.30898236585317645, 1.9360960169335657, 1.6094318357430304, -0.39329795545184015, 0.3167723598976957])
-        self.trajShakeSalt.addPostureWP([0.024361678107943596, 0.024361678107943596, 
+        self.trajShakeSalt.addPostureWP([0.024361678107943596, 0.024361678107943596,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.22234622280244382, 0.004548223545309593, 0.13071522011414413, 2.0817017281696133, 1.1418970725651827, -0.4552467192731869, 0.335930673724112])
-        self.trajShakeSalt.addPostureWP([0.024332337243309566, 0.024332337243309566, 
+        self.trajShakeSalt.addPostureWP([0.024332337243309566, 0.024332337243309566,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.16698047214390493, -0.009707208699479875, -0.12402218104724971, 2.182201689193785, 0.1489575444963377, -0.5712434934364764, 0.09595690564229147])
-        self.trajShakeSalt.addPostureWP([0.025468511543542877, 0.025468511543542877, 
+        self.trajShakeSalt.addPostureWP([0.025468511543542877, 0.025468511543542877,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.6216710691442365, 0.6715737490501017, -0.6437964700413162, 2.1247705467775284, -0.1441990611776954, -0.3057524639307719, -0.3092821028996973])
-        self.trajShakeSalt.addPostureWP([0.025403325829391032, 0.025403325829391032, 
+        self.trajShakeSalt.addPostureWP([0.025403325829391032, 0.025403325829391032,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.5437735484531676, 0.6326916011583551, -0.744919211391087, 2.047329658353664, -0.14467963269495024, -0.31590819398726516, -0.29829881611639514])
-        self.trajShakeSalt.addPostureWP([0.025538985616602845, 0.025538985616602845, 
+        self.trajShakeSalt.addPostureWP([0.025538985616602845, 0.025538985616602845,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.4721646511992432, 0.5711817561108634, -0.42322977595535693, 2.126791779640995, -0.013012518067382737, -0.41412143468303314, -0.271159551975299])
-        self.trajShakeSalt.addPostureWP([0.026384310012505203, 0.026384310012505203, 
+        self.trajShakeSalt.addPostureWP([0.026384310012505203, 0.026384310012505203,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.34055061750814686, 0.5258918238208286, -0.16127303190027792, 2.059073434254529, 0.29760181111300077, -0.47517876689080657, -0.20144048668789935])
-        self.trajShakeSalt.addPostureWP([0.02628160068665444, 0.02628160068665444, 
+        self.trajShakeSalt.addPostureWP([0.02628160068665444, 0.02628160068665444,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.22413955315509168, 0.5009679278493124, 0.12370844623095786, 1.9192989590033398, 0.6393347914400501, -0.4667458060549741, -0.19479962992865535])
-        self.trajShakeSalt.addPostureWP([0.024368664789607912, 0.024368664789607912, 
+        self.trajShakeSalt.addPostureWP([0.024368664789607912, 0.024368664789607912,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.21897583626527597, 0.280341408527275, 0.40379423091638394, 1.7890040208130233, 0.9422130928768778, -0.526108764888531, -0.13471860411097075])
-        self.trajShakeSalt.addPostureWP([0.024910770843457775, 0.024910770843457775, 
+        self.trajShakeSalt.addPostureWP([0.024910770843457775, 0.024910770843457775,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.14219838746455393, 0.12616914086344647, 0.4142910286228933, 1.7289071693320457, 1.2174849707601356, -0.5484305641891236, -0.07975075160368959])
-        self.trajShakeSalt.addPostureWP([0.024768694239681307, 0.024768694239681307, 
+        self.trajShakeSalt.addPostureWP([0.024768694239681307, 0.024768694239681307,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.12019693214181422, 0.03166299202738259, 0.41362450616755464, 1.6695271535542155, 1.426683337395159, -0.5971375938632858, -0.009203734869275617])
-        self.trajShakeSalt.addPostureWP([0.024733771343043814, 0.024733771343043814, 
+        self.trajShakeSalt.addPostureWP([0.024733771343043814, 0.024733771343043814,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.10360896498976005, 0.017635370325832966, 0.40886134101865207, 1.6695959043723732, 1.6846222090792375, -0.6784336408318479, 0.2678733444053529])
 
-        # ==============================================================================================        
+        # ==============================================================================================
         self.trajGoToIdle = Trajectory.Trajectory("GoToIdle", TIME_GO_TO_IDLE)
         self.trajGoToIdle.setPrevTraj(self.trajShakeSalt)
 
@@ -327,36 +327,36 @@ class Demo10_SaltShake:
         self.trajGoToIdle.addRHOrientWP([-0.2220946874607929, -0.9077174403305266, 0.355981738747214])
         self.trajGoToIdle.addRHOrientWP([0.5586839928649725, -0.7564737006830804, 0.340029022719086])
         self.trajGoToIdle.addRHOrientWP([0.9484107547164847, -0.04658272139778326, 0.31360339667370374])
-      
 
-        self.trajGoToIdle.addPostureWP([0.024606146828888193, 0.024606146828888193, 
+
+        self.trajGoToIdle.addPostureWP([0.024606146828888193, 0.024606146828888193,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.10210171461772798, 0.016852514207610723, 0.4102637558684599, 1.6690501292036815, 1.674345801931866, -0.6858570043924165, 0.25368377222916494])
-        self.trajGoToIdle.addPostureWP([0.024444179054270782, 0.024444179054270782, 
+        self.trajGoToIdle.addPostureWP([0.024444179054270782, 0.024444179054270782,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.3523642258996476, 0.2396121699960159, 0.4261238024554756, 1.7558932480532394, 1.3976591892112387, -0.6615721654432645, 0.11867147916846761])
-        self.trajGoToIdle.addPostureWP([0.02472272940815622, 0.02472272940815622, 
+        self.trajGoToIdle.addPostureWP([0.02472272940815622, 0.02472272940815622,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.4862750309398737, 0.36942646700645854, 0.7752889236138033, 1.8501925268508197, 1.2081106461829472, -0.6378789346239732, 0.11439103213556615])
-        self.trajGoToIdle.addPostureWP([0.02428527940360682, 0.02428527940360682, 
+        self.trajGoToIdle.addPostureWP([0.02428527940360682, 0.02428527940360682,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             0.11154420308839788, 0.5405581360437428, 0.9219763400763243, 1.8815433096177934, 1.6751140122937183, -0.805528931535813, 0.3740307122838615])
-        self.trajGoToIdle.addPostureWP([0.02397392167662364, 0.02397392167662364, 
+        self.trajGoToIdle.addPostureWP([0.02397392167662364, 0.02397392167662364,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.37839745984804557, 0.4122913649664896, 1.2578340311798042, 1.9001112868960444, 1.7290745039433773, -0.6226387276145056, 0.08318963871212404])
-        self.trajGoToIdle.addPostureWP([0.023473256977919715, 0.023473256977919715, 
+        self.trajGoToIdle.addPostureWP([0.023473256977919715, 0.023473256977919715,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.4620702596514896, 0.3125594210774841, 1.2878843941925593, 1.6252925281205395, 1.6008896922525346, -0.5364521414711813, -0.053656654558083716])
-        self.trajGoToIdle.addPostureWP([0.023645138607220822, 0.023645138607220822, 
+        self.trajGoToIdle.addPostureWP([0.023645138607220822, 0.023645138607220822,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.4755215172061432, 0.25872259373613504, 0.9470806144888511, 1.0956591778990117, 1.3276363707632581, -0.5195520726287962, -0.043247681144563746])
-        self.trajGoToIdle.addPostureWP([0.023957246358055746, 0.023957246358055746, 
+        self.trajGoToIdle.addPostureWP([0.023957246358055746, 0.023957246358055746,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.37890285379340527, 0.08905003854511831, 0.5235219585785394, 1.0797479704800705, 0.5944826264098443, -0.42464485268665564, -0.1294609022888612])
-        self.trajGoToIdle.addPostureWP([0.023637855598762605, 0.023637855598762605, 
+        self.trajGoToIdle.addPostureWP([0.023637855598762605, 0.023637855598762605,
             0.0, 0.174532925, 0.0, 0.174532925, 0.0, 0.0, 0.0,  # left arm
             -0.35589626709932876, 0.05553932690495682, 0.29235494805813456, 0.9145562780667971, -0.13903281815065885, -0.18789934824279428, -0.33216257045153824])
-  
+
     def createFSM(self):
         # define the states
         goToReadyState = TrajectoryState(self.dreamerInterface, self.trajGoToReady)
@@ -370,22 +370,22 @@ class Demo10_SaltShake:
         # wire the states into a FSM
         self.fsm = smach.StateMachine(outcomes=['exit'])
         with self.fsm:
-            smach.StateMachine.add("GoToReady", goToReadyState, 
+            smach.StateMachine.add("GoToReady", goToReadyState,
                 transitions={'done':'GrabSalt',
                              'exit':'exit'})
-            smach.StateMachine.add("GrabSalt", grabSaltState, 
+            smach.StateMachine.add("GrabSalt", grabSaltState,
                 transitions={'done':'EnablePowerGraspState',
                              'exit':'exit'})
-            smach.StateMachine.add("EnablePowerGraspState", enablePowerGraspState, 
+            smach.StateMachine.add("EnablePowerGraspState", enablePowerGraspState,
                 transitions={'done':'ShakeSaltState',
                              'exit':'exit'})
-            smach.StateMachine.add("ShakeSaltState", shakeSaltState, 
+            smach.StateMachine.add("ShakeSaltState", shakeSaltState,
                 transitions={'done':'DisablePowerGraspState',
                              'exit':'exit'})
-            smach.StateMachine.add("DisablePowerGraspState", disablePowerGraspState, 
+            smach.StateMachine.add("DisablePowerGraspState", disablePowerGraspState,
                 transitions={'done':'GoToIdle',
                              'exit':'exit'})
-            smach.StateMachine.add("GoToIdle", goToIdleState, 
+            smach.StateMachine.add("GoToIdle", goToIdleState,
                 transitions={'done':'exit',
                              'exit':'exit'})
 
@@ -420,5 +420,3 @@ if __name__ == "__main__":
     rospy.init_node('Demo10_SaltShake', anonymous=True)
     demo = Demo10_SaltShake()
     demo.run()
-
-    
