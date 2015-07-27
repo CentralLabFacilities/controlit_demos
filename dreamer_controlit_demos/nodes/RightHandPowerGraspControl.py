@@ -24,7 +24,7 @@ class RightHandPowerGraspControl:
 
         print "Creating ROS publisher on topic {0}".format(self.rosTopic)
         self.publisher = rospy.Publisher(self.rosTopic, Bool, queue_size=1)
-        
+
         if includeFingerSelect:
             self.selectIndexFingerPublisher = rospy.Publisher("/dreamer_controller/controlit/rightHand/includeRightIndexFinger", Bool, queue_size=1)
             self.selectMiddleFingerPublisher = rospy.Publisher("/dreamer_controller/controlit/rightHand/includeRightMiddleFinger", Bool, queue_size=1)
@@ -40,7 +40,7 @@ class RightHandPowerGraspControl:
         """
         self.commandMsg.data = True
         self.publisher.publish(self.commandMsg)
-        
+
 
     def relaxPowerGrasp(self):
         """
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     # Define default values for the command line arguments
     rosTopic = '/dreamer_controller/controlit/rightHand/powerGrasp'
-    
+
     usageStr = "Usage: python RightHandPowerGraspControl.py [parameters]\n"\
                "Valid parameters include:\n"\
                " -h\n"\
