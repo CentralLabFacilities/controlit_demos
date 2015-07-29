@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
     # controlit_core
     controlit_cmake
     controlit_dependency_addons
+    controlit_trajectory_generators
     geometry_msgs
     interactive_markers
     roscpp
