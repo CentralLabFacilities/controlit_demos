@@ -51,7 +51,7 @@ class SineWaveTrajGen:
 # Main method
 if __name__ == "__main__":
     rospy.init_node('Right_Thumb_CMC_Tester', anonymous=True)
-    
+
     modePublisher = rospy.Publisher("/dreamer_controller/controlit/rightHand/mode", Int32, queue_size=1)
     kpPublisher = rospy.Publisher("/dreamer_controller/controlit/rightHand/thumb/kp", Float64, queue_size=1)
     kdPublisher = rospy.Publisher("/dreamer_controller/controlit/rightHand/thumb/kd", Float64, queue_size=1)
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     posMsg.data = DEFAULT_POS
 
     sineWaveGenerator = SineWaveTrajGen(posPublisher)
-    
+
     options = "Please select an option:\n"\
               "  - 1: switch to position control mode\n"\
               "  - 2: set Kp gain\n"\

@@ -131,7 +131,7 @@ class HelloWorldDreamer:
         fInitZ = interp1d(tt, zz, kind='cubic')
 
         # Generate the interpolated points along initial / final trajectory with 1 millisecond resolution
-        # To get millisecond resolution of the trajectory, the number of 
+        # To get millisecond resolution of the trajectory, the number of
         # interpolation points is (INIT_TRAJ_TIME * 1000)
         tInitT = np.linspace(0, INIT_TRAJ_TIME, INIT_TRAJ_TIME * 1000)   # start, end, number of values to interpolate along trajectory
         tInitX = fInitX(tInitT)
@@ -208,7 +208,7 @@ class HelloWorldDreamer:
                 if printInit:
                     print "Executing initial trajectory..."
                     printInit = False
-                
+
                 self.leftHandGoalMsg.data[0] = self.rightHandGoalMsg.data[0] = self.linearInterpolate(tInitX, deltaTime)
                 self.leftHandGoalMsg.data[1] = self.rightHandGoalMsg.data[1] = self.linearInterpolate(tInitY, deltaTime)
                 self.leftHandGoalMsg.data[2] = self.rightHandGoalMsg.data[2] = self.linearInterpolate(tInitZ, deltaTime)
@@ -244,7 +244,7 @@ class HelloWorldDreamer:
                 self.leftHandGoalMsg.data[0] = self.rightHandGoalMsg.data[0] = self.linearInterpolate(tInitX, deltaTime)
                 self.leftHandGoalMsg.data[1] = self.rightHandGoalMsg.data[1] = self.linearInterpolate(tInitY, deltaTime)
                 self.leftHandGoalMsg.data[2] = self.rightHandGoalMsg.data[2] = self.linearInterpolate(tInitZ, deltaTime)
-            
+
             # flip the sign of the left hand's Y-axis goal
             self.leftHandGoalMsg.data[Y_AXIS_INDEX] = -1 * self.leftHandGoalMsg.data[Y_AXIS_INDEX]
 
@@ -260,7 +260,7 @@ class HelloWorldDreamer:
             #         print "Transitioning to STATE_WAVE_UP"
             #         state = STATE_WAVE_UP
             #         goalIndex = 0
-            
+
             # elif state == STATE_WAVE_UP:
             #     for ii in range(0, NUM_DOFS):
             #         self.rightHandGoalMsg.data[ii] = WAVE_TRAJECTORY[goalIndex][ii]
@@ -273,7 +273,7 @@ class HelloWorldDreamer:
             #         print "Transitioning to STATE_WAVE_DOWN"
             #         state = STATE_WAVE_DOWN
             #         goalIndex = len(WAVE_TRAJECTORY) - 1
-            
+
             # elif state == STATE_WAVE_DOWN:
             #     for ii in range(0, NUM_DOFS):
             #         self.rightHandGoalMsg.data[ii] = WAVE_TRAJECTORY[goalIndex][ii]
@@ -305,15 +305,15 @@ class HelloWorldDreamer:
             #     if goalIndex == -1:
             # a        print "Transitioning to STATE_GO_TO_START"
             #         state = STATE_GO_TO_START
-            #         goalIndex = 0            
+            #         goalIndex = 0
 
             # print "publishing goal:\n  - left: {0}\n  - right: {1}".format(self.leftHandGoalMsg.data, self.rightHandGoalMsg.data)
 
             rightGoalPub.publish(self.rightHandGoalMsg)
             leftGoalPub.publish(self.leftHandGoalMsg)
 
-            time.sleep(0.01) # 100Hz 
-            # time.sleep(0.1) # 10Hz 
+            time.sleep(0.01) # 100Hz
+            # time.sleep(0.1) # 10Hz
 
 # Main method
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ class Snapshot:
                   "  - left hand Cartesian position: {2}\n"\
                   "  - left hand orientation: {3}\n"\
                   "  - posture: {4}".format(self.rightHandCartesian, self.rightHandOrientation,
-                                            self.leftHandCartesian, self.leftHandOrientation, 
+                                            self.leftHandCartesian, self.leftHandOrientation,
                                             self.posture)
 
     def __repr__(self):
@@ -111,7 +111,7 @@ class TakeSnapshot:
                     print "  - posture task Kp"
                 if self.postureTaskKdPublisher.get_num_connections() == 0:
                     print "  - posture task Kd"
-                    
+
             time.sleep(0.5)
             pauseCount = pauseCount + 1
             if pauseCount > 5 and not printWarning:
@@ -123,7 +123,7 @@ class TakeSnapshot:
 
         # Enable the Cartesian position and orientation tasks
         enableMsg = Int32()
-        enableMsg.data = SENSING_MODE      
+        enableMsg.data = SENSING_MODE
         self.rightCartesianTaskEnablePublisher.publish(enableMsg)
         self.leftCartesianTaskEnablePublisher.publish(enableMsg)
         self.rightOrientationTaskEnablePublisher.publish(enableMsg)
@@ -231,10 +231,10 @@ class TakeSnapshot:
 
             if rospy.is_shutdown():
                 return
-    
+
             # Take the snapshot
             snapShot = Snapshot(self.currentRightCartesianPos, self.currentLeftCartesianPos,
-                                self.currentRightOrientation, self.currentLeftOrientation, 
+                                self.currentRightOrientation, self.currentLeftOrientation,
                                 self.currentPosture)
             print snapShot
             snapShots.append(snapShot)
@@ -249,10 +249,10 @@ class TakeSnapshot:
 
         # Print the results
         result = " === Forward trajectories ==="
-        
+
         result = result + "\n\nRightHandPosition:"
         for snapshot in snapShots:
-            result = result + "\n  " 
+            result = result + "\n  "
             result = result + "{0}".format(snapshot.rightHandCartesian)
 
         result = result + "\nRightHandOrientation:"
@@ -276,25 +276,25 @@ class TakeSnapshot:
             result = result + "{0}".format(snapshot.posture)
 
         result = result + "\n\n === Reverse trajectories ==="
-        
+
         result = result + "\n\nRightHandPosition:"
         for snapshot in snapShots[::-1]:
-            result = result + "\n  " 
+            result = result + "\n  "
             result = result + "{0}".format(snapshot.rightHandCartesian)
 
         result = result + "\n\nRightHandOrientation:"
         for snapshot in snapShots[::-1]:
-            result = result + "\n  " 
+            result = result + "\n  "
             result = result + "{0}".format(snapshot.rightHandOrientation)
 
         result = result + "\n\nLeftHandPosition:"
         for snapshot in snapShots[::-1]:
-            result = result + "\n  " 
+            result = result + "\n  "
             result = result + "{0}".format(snapshot.leftHandCartesian)
 
         result = result + "\n\nLeftHandOrientation:"
         for snapshot in snapShots[::-1]:
-            result = result + "\n  " 
+            result = result + "\n  "
             result = result + "{0}".format(snapshot.leftHandOrientation)
 
         result = result + "\nPosture:"
