@@ -59,7 +59,7 @@ import DreamerInterface
 import Trajectory
 import TrajectoryGeneratorCubicSpline
 
-import roslib; roslib.load_manifest('controlit_dreamer_integration')
+# import roslib; roslib.load_manifest('controlit_dreamer_integration')
 
 import controlit_trajectory_generators  # This adds the directory containing TrapezoidVelocityTrajGen to the PYTHONPATH
 import TrapezoidVelocityTrajGen
