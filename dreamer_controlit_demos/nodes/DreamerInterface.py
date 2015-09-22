@@ -524,13 +524,21 @@ class DreamerInterface:
         # print "Done following trajectory {0}!".format(traj.name)
         return not rospy.is_shutdown()
 
-    def updateRightHandCartesianPosition(self, cartesianGoal):
+    def updateRightHandPosition(self, cartesianGoal):
         self.rightHandCartesianGoalMsg.data = cartesianGoal
         self.rightCartesianTaskGoalPublisher.publish(self.rightHandCartesianGoalMsg)
 
-    def updateLeftHandCartesianPosition(self, cartesianGoal):
+    def updateLeftHandPosition(self, cartesianGoal):
         self.leftHandCartesianGoalMsg.data = cartesianGoal
         self.leftCartesianTaskGoalPublisher.publish(self.leftHandCartesianGoalMsg)
+
+    def updateRightHandOrientation(self, orienatationGoal):
+        self.rightHandOrientationGoalMsg.data = orientationGoal
+        self.rightOrientationTaskGoalPublisher.publish(self.rightHandOrientationGoalMsg)
+
+    def updateLeftHandOrientation(self, orienatationGoal):
+        self.leftHandOrientationGoalMsg.data = orientationGoal
+        self.leftOrientationTaskGoalPublisher.publish(self.leftHandOrientationGoalMsg)
 
     def closeRightHand(self, includePinky = True, includeMiddle = True, includeIndex = True):
 
