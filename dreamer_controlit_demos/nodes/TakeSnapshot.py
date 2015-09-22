@@ -4,7 +4,7 @@
 Takes a snapshot of Dreamer's state state.
 '''
 
-# import sys, getopt     # for getting and parsing command line arguments
+import sys, getopt     # for getting and parsing command line arguments
 import time
 # import math
 # import threading
@@ -37,7 +37,7 @@ class Snapshot:
         return self.__str__()
 
 class TakeSnapshot:
-    def __init__(self):
+    def __init__(self, use3DOFOrientation):
 
         # Initialize member variables
         self.currentPosture = None
@@ -51,13 +51,14 @@ class TakeSnapshot:
         self.rightCartesianTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/RightHandPosition/actualWorldPosition", Float64MultiArray, self.rightCartesianTaskActualCallback)
         self.leftCartesianTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/LeftHandPosition/actualWorldPosition",  Float64MultiArray, self.leftCartesianTaskActualCallback)
 
-        # 3-DOF orientation tasks
-        self.rightOrientationTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/RightHandOrientation/actualWorldOrientation", Float64MultiArray, self.rightOrientationTaskActualCallback)
-        self.leftOrientationTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/LeftHandOrientation/actualWorldOrientation", Float64MultiArray, self.leftOrientationTaskActualCallback)
-
-        # 2-DOF orientation tasks
-        # self.rightOrientationTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/RightHandOrientation/actualHeading", Float64MultiArray, self.rightOrientationTaskActualCallback)
-        # self.leftOrientationTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/LeftHandOrientation/actualHeading", Float64MultiArray, self.leftOrientationTaskActualCallback)
+        if use3DOFOrientation:
+            # 3-DOF orientation tasks
+            self.rightOrientationTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/RightHandOrientation/actualWorldOrientation", Float64MultiArray, self.rightOrientationTaskActualCallback)
+            self.leftOrientationTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/LeftHandOrientation/actualWorldOrientation", Float64MultiArray, self.leftOrientationTaskActualCallback)
+        else:
+            # 2-DOF orientation tasks
+            self.rightOrientationTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/RightHandOrientation/actualHeading", Float64MultiArray, self.rightOrientationTaskActualCallback)
+            self.leftOrientationTaskActualSubscriber = rospy.Subscriber("/dreamer_controller/LeftHandOrientation/actualHeading", Float64MultiArray, self.leftOrientationTaskActualCallback)
 
         # Create the ROS topic publishers
         self.rightCartesianTaskEnablePublisher = rospy.Publisher("/dreamer_controller/RightHandPosition/enableState", Int32, queue_size=1)
@@ -309,8 +310,39 @@ if __name__ == "__main__":
 
     rospy.init_node('TakeSnapshot', anonymous=True)
 
-    snapshot = TakeSnapshot()
-    snapshot.run()
 
-    print "TakeSnapshot: Done. Waiting until ctrl+c is hit..."
-    rospy.spin()  # just to prevent this node from exiting
+    oriDim = -1
+
+    usageStr = "Usage: python {0} [parameters]\n"\
+               "Valid parameters include:\n"\
+               " -h\n"\
+               " -o or --orientation [num dimensions]".format(__file__)
+
+    # Parse the command line arguments
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],"ho:")
+    except getopt.GetoptError:
+       rospy.logerr(usageStr)
+       sys.exit(2)
+
+    for opt, arg in opts:
+        if opt == '-h':
+            rospy.loginfo(usageStr)
+            sys.exit()
+        elif opt in ("-o", "--orientation"):
+            oriDim = int(arg)
+        else:
+            print "Unknown argument \"{0}\"".format(opt)
+
+    if oriDim == -1:
+        print "Must specify number of orientation dimensions (either 2 or 3).\n{0}".format(usageStr)
+    else:
+        use3DOFOrientation = False
+        if oriDim == 3:
+            use3DOFOrientation = True
+
+        snapshot = TakeSnapshot(use3DOFOrientation)
+        snapshot.run()
+
+        print "TakeSnapshot: Done. Waiting until ctrl+c is hit..."
+        rospy.spin()  # just to prevent this node from exiting
