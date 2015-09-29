@@ -25,7 +25,7 @@ class Trajectory:
         self.initPostureSet = False
 
     def setInitRHCartWP(self, wp):
-        ''' 
+        '''
         Sets the first waypoint in the right hand Cartesian space trajectory.
         '''
         if not self.initRHCartPosSet:
@@ -35,7 +35,7 @@ class Trajectory:
             self.rhCartWP[0] = wp
 
     def setInitLHCartWP(self, wp):
-        ''' 
+        '''
         Sets the first waypoint in the left hand Cartesian space trajectory.
         '''
         if not self.initLHCartPosSet:
@@ -45,7 +45,7 @@ class Trajectory:
             self.lhCartWP[0] = wp
 
     def setInitRHOrientWP(self, wp):
-        ''' 
+        '''
         Sets the first waypoint in the right hand orientation space trajectory.
         '''
         if not self.initRHOrientSet:
@@ -55,7 +55,7 @@ class Trajectory:
             self.rhOrientWP[0] = wp
 
     def setInitLHOrientWP(self, wp):
-        ''' 
+        '''
         Sets the first waypoint in the left hand orientation space trajectory.
         '''
         if not self.initLHOrientSet:
@@ -65,7 +65,7 @@ class Trajectory:
             self.lhOrientWP[0] = wp
 
     def setInitPostureWP(self, wp):
-        ''' 
+        '''
         Sets the first waypoint in the posture space trajectory.
         '''
         if not self.initPostureSet:
@@ -105,7 +105,7 @@ class Trajectory:
         self.jPosWP.append(wp)
 
     def makeRHCartStatic(self, prevTraj):
-        ''' 
+        '''
         Fix the right hand Cartesian space trajectory.
         '''
         self.rhCartWP.append(prevTraj.getFinalRHCartPos())
@@ -114,7 +114,7 @@ class Trajectory:
         self.rhCartWP.append(prevTraj.getFinalRHCartPos())
 
     def makeRHOrientStatic(self, prevTraj):
-        ''' 
+        '''
         Fix the right hand orientation space trajectory.
         '''
         self.rhOrientWP.append(prevTraj.getFinalRHOrient())
@@ -123,7 +123,7 @@ class Trajectory:
         self.rhOrientWP.append(prevTraj.getFinalRHOrient())
 
     def makeLHCartStatic(self, prevTraj):
-        ''' 
+        '''
         Fix the left hand Cartesian space trajectory.
         '''
         self.lhCartWP.append(prevTraj.getFinalLHCartPos())
@@ -132,7 +132,7 @@ class Trajectory:
         self.lhCartWP.append(prevTraj.getFinalLHCartPos())
 
     def makeLHOrientStatic(self, prevTraj):
-        ''' 
+        '''
         Fix the left hand orientation space trajectory.
         '''
         self.lhOrientWP.append(prevTraj.getFinalLHOrient())
