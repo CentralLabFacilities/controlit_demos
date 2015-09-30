@@ -1048,7 +1048,7 @@ class AwaitCommandState(smach.State):
         elif cmd == Command.CMD_BEHAVIOR_MORE:
             return "execute_demo"
 
-    def process2DigitCmd(self, cmd):
+    def process2DigitCmd(self, cmd, userdata):
         digit1 = int(cmd / 10)
         digit2 = int(cmd - digit1 * 10)
 
@@ -1056,18 +1056,18 @@ class AwaitCommandState(smach.State):
               "  - digit1 = {0}\n"\
               "  - digit2 = {1}".format(digit1, digit2)
 
-        if digit1 == CMD_LEFT_GRIPPER:
+        if digit1 == Command.CMD_LEFT_GRIPPER:
             userdata.endEffectorSide = "left"
-            if digit2 == CMD_OPEN:
-                userData.endEffectorCmd = "open"
+            if digit2 == Command.CMD_OPEN:
+                userdata.endEffectorCmd = "open"
             else:
-                userData.endEffectorCmd = "close"
-        elif digit1 == CMD_RIGHT_HAND:
+                userdata.endEffectorCmd = "close"
+        elif digit1 == Command.CMD_RIGHT_HAND:
             userdata.endEffectorSide = "right"
-            if digit2 == CMD_OPEN:
-                userData.endEffectorCmd = "open"
+            if digit2 == Command.CMD_OPEN:
+                userdata.endEffectorCmd = "open"
             else:
-                userData.endEffectorCmd = "close"
+                userdata.endEffectorCmd = "close"
         else:
             rospy.logerr("Invalid digit 1 of command {0}.".format(cmd))
             return "done"
@@ -1141,7 +1141,7 @@ class AwaitCommandState(smach.State):
 
             # Process 2 digit commands
             elif self.cmd > 9 and self.cmd < 100:
-                return self.process2DigitCmd(self.cmd)
+                return self.process2DigitCmd(self.cmd, userdata)
 
             # Process 3 digit commands
             elif self.cmd > 99 and self.cmd < 1000:

@@ -320,7 +320,7 @@ if __name__ == "__main__":
 
     # Parse the command line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:],"ho:")
+        opts, args = getopt.getopt(sys.argv[1:],"ho:",["orientation="])
     except getopt.GetoptError:
        rospy.logerr(usageStr)
        sys.exit(2)
