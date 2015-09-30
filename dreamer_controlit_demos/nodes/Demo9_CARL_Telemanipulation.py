@@ -23,7 +23,7 @@ lines 487, 488, 593, and 594 to contain self.read_float() instead of self.read_n
 -----------------
 Usage Notes:
 
-To issue a command using the command line:
+Commands that can be issued via command line:
 
   exit:
     $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 0'
@@ -40,6 +40,17 @@ To issue a command using the command line:
   wave:
     $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 7'
 
+  open right hand:
+    $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 20'
+
+  close right hand:
+    $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 21'
+
+  open left gripper:
+    $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 10'
+
+  close left gripper:
+    $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 11'
 
 To visualize FSM:
   $ rosrun smach_viewer smach_viewer.py
@@ -1679,7 +1690,8 @@ class Demo9_CARL_Telemanipulation:
                              "execute_hookem_horns":"HornsState",
                              "done":"AwaitCommandState",
                              "exit":"exit"},
-                remapping={'endEffectorSide':'endEffectorSide'})
+                remapping={'endEffectorSide':'endEffectorSide',
+                           'endEffectorState':'endEffectorState'})
 
             smach.StateMachine.add("GoToReadyState", goToReadyState,
                 transitions={'done':'AwaitCommandState',
