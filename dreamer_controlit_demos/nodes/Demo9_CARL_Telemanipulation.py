@@ -159,10 +159,10 @@ class CartesianDirection(IntEnum):
 TIME_GO_TO_READY = 5.0
 TIME_GO_TO_IDLE = 7.0
 
-GO_BACK_TO_READY_SPEED = 0.01 # 1 cm/s
+GO_BACK_TO_READY_SPEED = 0.02 # 1 cm/s
 
 # The speed at which the Cartesian position should change
-TRAVEL_SPEED = 0.02  # 2 cm per second
+TRAVEL_SPEED = 0.03  # 2 cm per second
 ACCELERATION = 0.06  # 1 cm/s^2
 DECELERATION = 0.06  # 1 cm/s^2
 
@@ -849,6 +849,7 @@ class TrajectoryHookHorns(smach.State):
                 return "exit"
         else:
             return "exit"
+
 class GoBackToReadyState(smach.State):
     """
     A SMACH state that makes the end effectors go back to the ready state,
@@ -877,7 +878,7 @@ class GoBackToReadyState(smach.State):
     def execute(self, userdata):
         rospy.loginfo("GoBackToReadyState: Executing GoBackToReadyState")
 
-        # Let's make the trajectory's duration a function of the Cartesian distance to traverse
+        # The trajectory's duration is a function of the distance to traverse
         rhCurrCartPos = self.dreamerInterface.rightHandCartesianGoalMsg.data
         lhCurrCartPos = self.dreamerInterface.leftHandCartesianGoalMsg.data
 
@@ -943,7 +944,7 @@ class AwaitCommandState(smach.State):
     based on the received command.
     """
 
-    def __init__(self, moveCartesianState, moveOrientationState, goToIdleState):
+    def __init__(self, moveCartesianState, moveOrientationState, goToIdleState, goBackToReadyState):
         """
         The constructor.
 
@@ -951,6 +952,7 @@ class AwaitCommandState(smach.State):
           - moveCartesianState: The SMACH state that moves the cartesian position of the end effector
           - moveOrientationState: The SMACH state that moves the orientation of the end effector
           - goToIdleState: The SMACH state that moves the robot back to the idle state
+          - goBackToReadyState: The SMACH state that moves the end effectors back to the read state
         """
 
         # Initialize parent class
@@ -969,15 +971,18 @@ class AwaitCommandState(smach.State):
             output_keys=['endEffectorSide', # i.e., "left" or "right"
                          'endEffectorCmd'])  # i.e., "open" or "close"
 
+        # Save the input parameters as local variables
         self.moveCartesianState = moveCartesianState
         self.moveOrientationState = moveOrientationState
         self.goToIdleState = goToIdleState
+        self.goBackToReadyState = goBackToReadyState
 
         # Initialize local variables
         self.rcvdCmd = False
         self.sleepPeriod = 0.5  # in seconds
         self.cmd = Command.CMD_GOTO_IDLE
-        self.isIdle = True  # Initially we are in idle state
+        self.isIdle = True     # Initially we are in idle state
+        self.isReady = False   # Initially we are not in the ready state
 
         # Register a ROS topic listener
         self.demoCmdSubscriber  = rospy.Subscriber("/demo9/cmd", Int32, self.demo9CmdCallback)
@@ -1018,7 +1023,22 @@ class AwaitCommandState(smach.State):
 
     #     self.rcvdCmd = True
 
-    def process1DigitCmd(self, cmd):
+    def goToReady(self, userdata, retval):
+        """
+        Moves the end effector back to the ready state before running
+        a pre-built behavior.
+        """
+
+        if not self.isReady:
+            rospy.loginfo("AwaitCommandState: Going back to ready position...")
+            if self.goBackToReadyState.execute(userdata) == "done":
+                self.isReady = True
+            else:
+                retval = "exit"
+            rospy.loginfo("AwaitCommandState: Executing " + retval)
+        return retval
+
+    def process1DigitCmd(self, cmd, userdata):
         if cmd == Command.CMD_GOTO_READY:
 
             # Only go to ready if we're in idle    TODO: eventually allow robot to return to ready from anywhere
@@ -1038,22 +1058,25 @@ class AwaitCommandState(smach.State):
                 return "done"
 
         elif cmd == Command.CMD_BEHAVIOR_SHAKE:
-            return "execute_hand_shake"
+            return self.goToReady(userdata, "execute_hand_shake")
 
         elif cmd == Command.CMD_BEHAVIOR_WAVE:
-            return "execute_wave"
+            return self.goToReady(userdata, "execute_wave")
 
         elif cmd == Command.CMD_BEHAVIOR_HOOKEM:
-            return "execute_hookem_horns"
+            return self.goToReady(userdata, "execute_hookem_horns")
 
         elif cmd == Command.CMD_BEHAVIOR_MORE:
-            return "execute_demo"
+            return self.goToReady(userdata, "execute_demo")
+        else:
+            rospy.logerr("AwaitCommandState: Invalid 1 digit command {0}.".format(cmd))
+            return "done"
 
     def process2DigitCmd(self, cmd, userdata):
         digit1 = int(cmd / 10)
         digit2 = int(cmd - digit1 * 10)
 
-        print "Two digit command:\n"\
+        print "AwaitCommandState: Two digit command:\n"\
               "  - digit1 = {0}\n"\
               "  - digit2 = {1}".format(digit1, digit2)
 
@@ -1070,7 +1093,7 @@ class AwaitCommandState(smach.State):
             else:
                 userdata.endEffectorCmd = "close"
         else:
-            rospy.logerr("Invalid digit 1 of command {0}.".format(cmd))
+            rospy.logerr("AwaitCommandState: Invalid digit 1 of command {0}.".format(cmd))
             return "done"
         return "grasp_end_effector"
 
@@ -1079,7 +1102,7 @@ class AwaitCommandState(smach.State):
         digit2 = int((cmd - digit1 * 100) / 10)
         digit3 = int(cmd - digit1 * 100 - digit2 * 10)
 
-        print "Three digit command:\n"\
+        print "AwaitCommandState: Three digit command:\n"\
               "  - digit1 = {0}\n"\
               "  - digit2 = {1}\n"\
               "  - digit3 = {2}".format(digit1, digit2, digit3)
@@ -1089,7 +1112,7 @@ class AwaitCommandState(smach.State):
         elif digit2 == Command.CMD_RIGHT_HAND:
             endEffector = "right"
         else:
-            rospy.logerr("Invalid second digit of command {0}.".format(cmd))
+            rospy.logerr("AwaitCommandState: Invalid second digit of command {0}.".format(cmd))
             return "done"
 
         if digit3 == Command.CMD_MOVE_LEFT:
@@ -1105,17 +1128,19 @@ class AwaitCommandState(smach.State):
         elif digit3 == Command.CMD_MOVE_BACKWARD:
             direction = CartesianDirection.BACKWARD
         else:
-            rospy.logerr("Invalid third digit of command {0}.".format(cmd))
+            rospy.logerr("AwaitCommandState: Invalid third digit of command {0}.".format(cmd))
             return "done"
 
         if digit1 == Command.CMD_TRANSLATE:
             self.moveCartesianState.setParameters(endEffector = endEffector, direction = direction)
+            self.isReady = False
             return "move_position"
         elif digit1 == Command.CMD_ROTATE:
             self.moveOrientationState.setParameters(endEffector = endEffector, direction = direction)
+            self.isReady = False
             return "move_orientation"
         else:
-            rospy.logerr("Invalid first digit of command {0}.".format(cmd))
+            rospy.logerr("AwaitCommandState: Invalid first digit of command {0}.".format(cmd))
             return "done"
 
     def execute(self, userdata):
@@ -1138,7 +1163,7 @@ class AwaitCommandState(smach.State):
         else:
             # Process single digit commands
             if self.cmd < 10:
-                return self.process1DigitCmd(self.cmd)
+                return self.process1DigitCmd(self.cmd, userdata)
 
             # Process 2 digit commands
             elif self.cmd > 9 and self.cmd < 100:
@@ -1664,7 +1689,8 @@ class Demo9_CARL_Telemanipulation:
         awaitCommandState = AwaitCommandState(
             moveCartesianState = moveCartesianState,
             moveOrientationState = moveOrientationState,
-            goToIdleState = goToIdleState)
+            goToIdleState = goToIdleState,
+            goBackToReadyState = goBackToReadyState)
         # executeDemoState = ExecuteDemoState(self.dreamerInterface)
         endEffectorState = EndEffectorState(self.dreamerInterface)
 
