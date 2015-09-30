@@ -174,7 +174,8 @@ Y_AXIS = 1
 Z_AXIS = 2
 
 # Define the Cartesian movement increment
-CARTESIAN_MOVE_DELTA = 0.01  # 1 cm movement increments
+# CARTESIAN_MOVE_DELTA = 0.01  # 1 cm position movement increment
+CARTESIAN_MOVE_DELTA = 0.03  # 3 cm movement increment
 
 
 class TrajectoryState(smach.State):
@@ -1446,7 +1447,7 @@ class MoveOrientationState(smach.State):
 
 class EndEffectorState(smach.State):
     """
-    A SMACH state that toggles the state of an end effector.
+    A SMACH state that controls the open/close configuration of the end effectors.
     """
 
     def __init__(self, dreamerInterface):
