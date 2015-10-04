@@ -40,6 +40,12 @@ Commands that can be issued via command line:
   wave:
     $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 7'
 
+  hook'em horns:
+    $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 8'
+
+  handoff:
+    $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 9'
+
   open right hand:
     $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 20'
 
