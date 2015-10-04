@@ -40,6 +40,12 @@ Commands that can be issued via command line:
   wave:
     $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 7'
 
+  hook'em horns:
+    $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 8'
+
+  handoff:
+    $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 9'
+
   open right hand:
     $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 20'
 
@@ -125,7 +131,7 @@ class Command:
     CMD_BEHAVIOR_SHAKE = 6
     CMD_BEHAVIOR_WAVE = 7
     CMD_BEHAVIOR_HOOKEM = 8
-    CMD_BEHAVIOR_MORE = 9
+    CMD_BEHAVIOR_HANDOFF = 9
 
     CMD_LEFT_GRIPPER = 1
     CMD_RIGHT_HAND = 2
@@ -851,6 +857,164 @@ class TrajectoryHookHorns(smach.State):
         else:
             return "exit"
 
+class TrajectoryHandoff(smach.State):
+    """
+    A SMACH state that makes the right hand grab the metal pole from the left gripper
+    and place it in a box.
+    """
+
+    def __init__(self, dreamerInterface, prevTraj, goBackToReadyState):
+        """
+        The constructor.
+
+        Keyword Parameters:
+          - dreamerInterface: The robot interface object. The trajectory is provided to this object.
+          - prevTraj: The previous trajectory. Used to ensure smooth transition into this trajectory
+        """
+
+        smach.State.__init__(self, outcomes=["done", "exit"])
+        self.dreamerInterface = dreamerInterface
+        self.goBackToReadyState = goBackToReadyState
+
+        TIME_REACH = 5.0
+        TIME_WAVE = 5.0
+
+        # ==============================================================================================
+        # Define the trajectory for the right hand to grab the metal pole
+        # ==============================================================================================
+        self.trajGrab = Trajectory.Trajectory("Grab", TIME_REACH)
+        self.trajGrab.setPrevTraj(prevTraj)
+
+        self.trajGrab.addRHCartWP([0.303996207471718, -0.2701030526942624, 1.0565650087543044])
+        self.trajGrab.addRHCartWP([0.31749277580892055, -0.32992869726982094, 1.1461401707278551])
+        self.trajGrab.addRHCartWP([0.30779682978191486, -0.361949330767653, 1.2197816452489496])
+        self.trajGrab.addRHCartWP([0.29018706331029137, -0.3679577983733542, 1.2791416394902366])
+        self.trajGrab.addRHCartWP([0.30434070396771357, -0.3175099914090866, 1.2476291579050283])
+        self.trajGrab.addRHCartWP([0.2948513283673404, -0.33299047851674124, 1.2450358759865228])
+
+        self.trajGrab.addRHOrientWP([0.42223231355270263, -0.9025357585647759, -0.08455221998171782])
+        self.trajGrab.addRHOrientWP([0.42223231355270263, -0.9025357585647759, -0.08455221998171782])
+        self.trajGrab.addRHOrientWP([0.42223231355270263, -0.9025357585647759, -0.08455221998171782])
+        self.trajGrab.addRHOrientWP([0.42223231355270263, -0.9025357585647759, -0.08455221998171782])
+        self.trajGrab.addRHOrientWP([0.42223231355270263, -0.9025357585647759, -0.08455221998171782])
+        self.trajGrab.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+
+        self.trajGrab.addLHCartWP(DEFAULT_READY_LH_CARTPOS)
+        self.trajGrab.addLHCartWP(DEFAULT_READY_LH_CARTPOS)
+        self.trajGrab.addLHCartWP(DEFAULT_READY_LH_CARTPOS)
+        self.trajGrab.addLHCartWP(DEFAULT_READY_LH_CARTPOS)
+        self.trajGrab.addLHCartWP(DEFAULT_READY_LH_CARTPOS)
+
+        self.trajGrab.addLHOrientWP(DEFAULT_READY_LH_ORIENT)
+        self.trajGrab.addLHOrientWP(DEFAULT_READY_LH_ORIENT)
+        self.trajGrab.addLHOrientWP(DEFAULT_READY_LH_ORIENT)
+        self.trajGrab.addLHOrientWP(DEFAULT_READY_LH_ORIENT)
+        self.trajGrab.addLHOrientWP(DEFAULT_READY_LH_ORIENT)
+
+        self.trajGrab.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.08563351097841793, 0.23066120570646761, -0.06947979281920762, 1.4175894359125643, 1.8652486120196512, -0.40980007607778823, -0.059917672051620484])
+        self.trajGrab.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.17224064168284461, 0.2722747206579846, 0.14874620850741385, 1.5779913500788043, 1.316143235453891, -0.3723838514077692, -0.11400556089711238])
+        self.trajGrab.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.24304778876516747, 0.32754466293103013, 0.269421325722746, 1.714861956511922, 1.0779088831553603, -0.09511151417983284, -0.3659881660791408])
+        self.trajGrab.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.2857795206271691, 0.4212023178240731, 0.2895947456690314, 1.8431326146407692, 0.788901779367182, 0.33959591972132375, -0.47706068004409297])
+        self.trajGrab.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.24807970222901007, 0.4306513133237536, 0.07307792647192368, 1.836185453575934, 0.638165860493282, 0.7033614682068413, -0.2041316891553697])
+        self.trajGrab.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.20809342510132905, 0.418759496243684, 0.15052961542725324, 1.8506436388881988, 0.6506060687046002, 0.7050826135247193, -0.2060501632804207])
+
+        self.trajDump = Trajectory.Trajectory("Dump", TIME_WAVE)
+        self.trajDump.setPrevTraj(self.trajGrab)
+
+        self.trajDump.addRHCartWP([0.2868881292068328, -0.31250931865079573, 1.2124015730822668])
+        self.trajDump.addRHCartWP([0.2773453343884247, -0.2496828012040767, 1.2155057368654114])
+        self.trajDump.addRHCartWP([0.2766658953890973, -0.24088039873570907, 1.210238266769635])
+        self.trajDump.addRHCartWP([0.2801663112038441, -0.26999082725889695, 1.2164901734483096])
+        self.trajDump.addRHCartWP([0.28518210143763, -0.2894883526620809, 1.209607768936799])
+        self.trajDump.addRHCartWP([0.2849143779404316, -0.3219168244561627, 1.2050017115439644])
+        self.trajDump.addRHCartWP([0.2793076861173483, -0.3632913000154979, 1.1966825028981967])
+        self.trajDump.addRHCartWP([0.27337408467027774, -0.38745897565382453, 1.1772654368728874])
+        self.trajDump.addRHCartWP([0.27527768844061823, -0.36631330013415836, 1.2022843613272516])
+        self.trajDump.addRHCartWP([0.28278464299792033, -0.3478235218557357, 1.2016913562988976])
+
+        self.trajDump.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+        self.trajDump.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+        self.trajDump.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+        self.trajDump.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+        self.trajDump.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+        self.trajDump.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+        self.trajDump.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+        self.trajDump.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+        self.trajDump.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+        self.trajDump.addRHOrientWP([-0.9162175793808496, -0.0720303299595776, 0.39415349649522474])
+
+        self.trajDump.addLHCartWP(DEFAULT_READY_LH_CARTPOS)
+        self.trajDump.addLHCartWP(DEFAULT_READY_LH_CARTPOS)
+        self.trajDump.addLHCartWP(DEFAULT_READY_LH_CARTPOS)
+        self.trajDump.addLHCartWP(DEFAULT_READY_LH_CARTPOS)
+        self.trajDump.addLHCartWP(DEFAULT_READY_LH_CARTPOS)
+
+        self.trajDump.addLHOrientWP(DEFAULT_READY_LH_ORIENT)
+        self.trajDump.addLHOrientWP(DEFAULT_READY_LH_ORIENT)
+        self.trajDump.addLHOrientWP(DEFAULT_READY_LH_ORIENT)
+        self.trajDump.addLHOrientWP(DEFAULT_READY_LH_ORIENT)
+        self.trajDump.addLHOrientWP(DEFAULT_READY_LH_ORIENT)
+
+        self.trajDump.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.12289672520864961, 0.36710252369018936, 0.10786125967776439, 1.8655120334771789, 0.5597246941406292, 0.739919098982845, -0.26467059413175575])
+        self.trajDump.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.1242728183388797, 0.3661074292690091, -0.10737696718121653, 1.9656809533580861, 0.2432491224911147, 0.7287232790995173, -0.2747785844253113])
+        self.trajDump.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.12128813501540103, 0.365822156086934, -0.14464738413872114, 1.9620185067430849, 0.09494689592511293, 0.7268826537796702, -0.2796011208704331])
+        self.trajDump.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.11978354191303375, 0.36410042522257047, -0.030447579730373625, 1.944115841211661, 0.4197895847301403, 0.7367403197719148, -0.27151826216433106])
+        self.trajDump.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.11921890686612477, 0.33092353784485873, 0.052014830357225116, 1.8968447470505743, 0.5316779970117527, 0.7378188213368994, -0.27056146645004275])
+        self.trajDump.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.11344040073624659, 0.31587202670329756, 0.17256950118274947, 1.8505990965519419, 0.697907173434319, 0.7405848629033178, -0.2646557445295657])
+        self.trajDump.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.10668532400170838, 0.3071968356314638, 0.3170745728399175, 1.7859277224922991, 0.83112599537123, 0.7403023768031077, -0.2602059448565691])
+        self.trajDump.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.0833422326230403, 0.3052211604407114, 0.3880526517087402, 1.7159578653629644, 0.9618448901774261, 0.7101897444014784, -0.23827068635629187])
+        self.trajDump.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.09871099683767812, 0.32039064915086113, 0.3280972011429039, 1.805045777393264, 0.7223384997060128, 0.7124877429724119, -0.24381749486168516])
+        self.trajDump.addPostureWP([0.0, 0.0,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18,  # left arm
+            0.10929320055116498, 0.32546351502957005, 0.2526359057752484, 1.8100626973716358, 0.5187541650248289, 0.7456462526215537, -0.2723748240440218])
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing TrajectoryHandoff')
+
+        return "done"
+
+        # if self.dreamerInterface.followTrajectory(self.trajGrab):
+        #     self.dreamerInterface.closeRightHand(includePinky = False, includeMiddle = True, includeIndex = False)
+        #     rospy.sleep(2.0) # pause 2 seconds
+        #     if self.dreamerInterface.followTrajectory(self.trajDump):
+        #          self.dreamerInterface.openRightHand()
+        #          rospy.sleep(2.0) # pause 2 seconds
+        #          return self.goBackToReadyState.execute(userdata) # Return back to the ready state
+        #     else:
+        #         return "exit"
+        # else:
+        #     return "exit"
+
 class GoBackToReadyState(smach.State):
     """
     A SMACH state that makes the end effectors go back to the ready state,
@@ -966,7 +1130,7 @@ class AwaitCommandState(smach.State):
             "execute_hand_shake",
             "execute_wave",
             "execute_hookem_horns",
-            # "execute_demo",
+            "execute_handoff",
             "done",
             "exit"],
             output_keys=['endEffectorSide', # i.e., "left" or "right"
@@ -1067,8 +1231,8 @@ class AwaitCommandState(smach.State):
         elif cmd == Command.CMD_BEHAVIOR_HOOKEM:
             return self.goToReady(userdata, "execute_hookem_horns")
 
-        elif cmd == Command.CMD_BEHAVIOR_MORE:
-            return self.goToReady(userdata, "execute_demo")
+        elif cmd == Command.CMD_BEHAVIOR_HANDOFF:
+            return self.goToReady(userdata, "execute_handoff")
         else:
             rospy.logerr("AwaitCommandState: Invalid 1 digit command {0}.".format(cmd))
             return "done"
@@ -1692,12 +1856,12 @@ class Demo9_CARL_Telemanipulation:
             moveOrientationState = moveOrientationState,
             goToIdleState = goToIdleState,
             goBackToReadyState = goBackToReadyState)
-        # executeDemoState = ExecuteDemoState(self.dreamerInterface)
         endEffectorState = EndEffectorState(self.dreamerInterface)
 
         shakeHandState = TrajectoryShakeHands(self.dreamerInterface, self.trajGoToReady)
         waveState = TrajectoryWave(self.dreamerInterface, self.trajGoToReady)
         hornsState = TrajectoryHookHorns(self.dreamerInterface, self.trajGoToReady)
+        handoffState = TrajectoryHandoff(self.dreamerInterface, self.trajGoToReady, goBackToReadyState)
 
         # wire the states into a FSM
         self.fsm = smach.StateMachine(outcomes=['exit'])
@@ -1712,10 +1876,10 @@ class Demo9_CARL_Telemanipulation:
                              "move_position":"MoveCartesianState",
                              "move_orientation":"MoveOrientationState",
                              "grasp_end_effector":"EndEffectorState",
-                             # "execute_demo":"ExecuteDemoState",
                              "execute_hand_shake":"ShakeHandState",
                              "execute_wave":"WaveState",
                              "execute_hookem_horns":"HornsState",
+                             "execute_handoff":"HandoffState",
                              "done":"AwaitCommandState",
                              "exit":"exit"},
                 remapping={'endEffectorSide':'endEffectorSide',
@@ -1747,11 +1911,6 @@ class Demo9_CARL_Telemanipulation:
                 remapping={'endEffectorSide':'endEffectorSide',
                            'endEffectorCmd':'endEffectorCmd'})
 
-            # smach.StateMachine.add("ExecuteDemoState", executeDemoState,
-            #     transitions={'done':'AwaitCommandState',
-            #                  'exit':'exit'},
-            #     remapping={'demoName':'demoName'})
-
             smach.StateMachine.add("ShakeHandState", shakeHandState,
                 transitions={'done':'AwaitCommandState',
                              'exit':'exit'})
@@ -1761,6 +1920,10 @@ class Demo9_CARL_Telemanipulation:
                              'exit':'exit'})
 
             smach.StateMachine.add("HornsState", hornsState,
+                transitions={'done':'AwaitCommandState',
+                             'exit':'exit'})
+
+            smach.StateMachine.add("HandoffState", handoffState,
                 transitions={'done':'AwaitCommandState',
                              'exit':'exit'})
     def run(self):
