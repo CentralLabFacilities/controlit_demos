@@ -25,13 +25,13 @@ Usage Notes:
 
 Commands that can be issued via command line:
 
-  exit:
+  exit and go to idle:
     $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 0'
 
   go to ready:
     $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 1'
 
-  go to idle:
+  reset:
     $ rostopic pub --once /demo9/cmd std_msgs/Int32 'data: 2'
 
   shake hands:
@@ -127,6 +127,7 @@ DEFAULT_READY_POSTURE = [0.06796522908004803, 0.06796522908004803,              
 class Command:
     CMD_GOTO_IDLE = 0
     CMD_GOTO_READY = 1
+    CMD_RESET = 2
 
     CMD_BEHAVIOR_SHAKE = 6
     CMD_BEHAVIOR_WAVE = 7
@@ -1030,11 +1031,11 @@ class GoBackToReadyState(smach.State):
         travelDist = max(self.dist(rhCurrCartPos, rhFinalCartPos), self.dist(lhCurrCartPos, lhFinalCartPos))
 
         if travelDist < 0.01:  # less than 1cm of movement, return done
-            rospy.loginfo("GoBackToReadyState: zero travel distance, returning done")
+            rospy.loginfo("GoBackToReadyState: Zero travel distance, returning done")
             return "done"
 
         travelTime = travelDist / GO_BACK_TO_READY_SPEED
-        rospy.loginfo("GoBackToReadyState: distance to travel is {0}, travel time is {1}".format(travelDist, travelTime))
+        rospy.loginfo("GoBackToReadyState: Distance to travel is {0}, travel time is {1}".format(travelDist, travelTime))
 
         # Create a trajectory to go back to the start / idle position
         traj = Trajectory.Trajectory("GoBackToReady", travelTime)  # TODO: make the time be proportional to the distance that needs to be traveled
@@ -1079,6 +1080,27 @@ class GoBackToReadyState(smach.State):
             return "exit"
 
 
+class ResetState(smach.State):
+    """
+    A SMACH state that makes the right hand push a tea can across a table towards
+    the left gripper.
+    """
+
+    def __init__(self, goBackToReadyState):
+        """
+        The constructor.
+
+        Keyword Parameters:
+          - goBackToReadyState: The state that makes the robot go back to the ready position
+        """
+
+        smach.State.__init__(self, outcomes=["done", "exit"])
+        self.goBackToReadyState = goBackToReadyState
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing ResetState')
+        return self.goBackToReadyState.execute(userdata) # Return back to the ready state
+
 class AwaitCommandState(smach.State):
     """
     A SMACH state that waits for a command to arrive. It subscribes to a
@@ -1108,6 +1130,7 @@ class AwaitCommandState(smach.State):
             "execute_wave",
             "execute_hookem_horns",
             "execute_push",
+            "reset",
             "done",
             "exit"],
             output_keys=['endEffectorSide', # i.e., "left" or "right"
@@ -1199,6 +1222,12 @@ class AwaitCommandState(smach.State):
             else:
                 return "done"
 
+        elif cmd == Command.CMD_RESET:
+            if self.isIdle:
+                self.isIdle = False
+                return "go_to_ready"
+            else:
+                return "reset"
         elif cmd == Command.CMD_BEHAVIOR_SHAKE:
             return self.goToReady(userdata, "execute_hand_shake")
 
@@ -1840,6 +1869,8 @@ class Demo9_CARL_Telemanipulation:
         hornsState = TrajectoryHookHorns(self.dreamerInterface, self.trajGoToReady)
         pushState = TrajectoryPush(self.dreamerInterface, self.trajGoToReady, goBackToReadyState)
 
+        resetState = ResetState(goBackToReadyState)
+
         # wire the states into a FSM
         self.fsm = smach.StateMachine(outcomes=['exit'])
         self.fsm.userdata.endEffectorSide = "right"
@@ -1858,6 +1889,7 @@ class Demo9_CARL_Telemanipulation:
                              "execute_hookem_horns":"HornsState",
                              "execute_push":"PushState",
                              "done":"AwaitCommandState",
+                             "reset":"ResetState",
                              "exit":"exit"},
                 remapping={'endEffectorSide':'endEffectorSide',
                            'endEffectorState':'endEffectorState'})
@@ -1901,6 +1933,10 @@ class Demo9_CARL_Telemanipulation:
                              'exit':'exit'})
 
             smach.StateMachine.add("PushState", pushState,
+                transitions={'done':'AwaitCommandState',
+                             'exit':'exit'})
+
+            smach.StateMachine.add("ResetState", resetState,
                 transitions={'done':'AwaitCommandState',
                              'exit':'exit'})
     def run(self):
