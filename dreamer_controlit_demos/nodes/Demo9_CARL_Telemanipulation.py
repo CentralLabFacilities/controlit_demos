@@ -181,7 +181,8 @@ Z_AXIS = 2
 
 # Define the Cartesian movement increment
 # CARTESIAN_MOVE_DELTA = 0.01  # 1 cm position movement increment
-CARTESIAN_MOVE_DELTA = 0.03  # 3 cm movement increment
+# CARTESIAN_MOVE_DELTA = 0.03  # 3 cm movement increment
+CARTESIAN_MOVE_DELTA = 0.05  # 3 cm movement increment
 
 
 class TrajectoryState(smach.State):
