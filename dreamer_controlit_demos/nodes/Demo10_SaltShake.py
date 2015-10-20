@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-This uses both posture and orientation control.
+This uses 5-DOF end effector control to grab and shake a salt shaker.
 '''
 
 import sys, getopt     # for getting and parsing command line arguments

@@ -15,7 +15,6 @@ def callback(errorMsg):
     errorNormMsg.data = math.sqrt(errorMsg.data[0] * errorMsg.data[0] + errorMsg.data[1] * errorMsg.data[1] + errorMsg.data[2] * errorMsg.data[2])
     # print "errorNorm = {0}".format(errorNormMsg.data)
     pub.publish(errorNormMsg)
-    
 
 rospy.init_node('node_name')
 
