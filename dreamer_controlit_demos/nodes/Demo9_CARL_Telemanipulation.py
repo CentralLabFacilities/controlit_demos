@@ -858,7 +858,7 @@ class TrajectoryHookHorns(smach.State):
         else:
             return "exit"
 
-class TrajectoryPush(smach.State):
+class TrajectoryRightHandPush(smach.State):
     """
     A SMACH state that makes the right hand push a tea can across a table towards
     the left gripper.
@@ -981,7 +981,141 @@ class TrajectoryPush(smach.State):
             0.5388601093664639, -0.03562601962327526, -1.1331442778677696, 0.7642302332765474, 2.2321638365639758, 0.22348831585647636, -0.39886717292755186])
 
     def execute(self, userdata):
-        rospy.loginfo('Executing TrajectoryPush')
+        rospy.loginfo('Executing TrajectoryRightHandPush')
+
+        if self.dreamerInterface.followTrajectory(self.trajReach):
+            rospy.sleep(2.0) # pause 2 seconds
+            if self.dreamerInterface.followTrajectory(self.trajPush):
+                 rospy.sleep(2.0) # pause 2 seconds
+                 return self.goBackToReadyState.execute(userdata) # Return back to the ready state
+            else:
+                return "exit"
+        else:
+            return "exit"
+
+class TrajectoryLeftHandPush(smach.State):
+    """
+    A SMACH state that makes the left gripper push a tea can across a table towards
+    the right hand.
+    """
+
+    def __init__(self, dreamerInterface, prevTraj, goBackToReadyState):
+        """
+        The constructor.
+
+        Keyword Parameters:
+          - dreamerInterface: The robot interface object. The trajectory is provided to this object.
+          - prevTraj: The previous trajectory. Used to ensure smooth transition into this trajectory
+        """
+
+        smach.State.__init__(self, outcomes=["done", "exit"])
+        self.dreamerInterface = dreamerInterface
+        self.goBackToReadyState = goBackToReadyState
+
+        TIME_REACH = 5.0
+        TIME_PUSH = 5.0
+
+        # ==============================================================================================
+        # Define the trajectory for the left hand to reach for the tea bottle
+        # ==============================================================================================
+        self.trajReach = Trajectory.Trajectory("Reach", TIME_REACH)
+        self.trajReach.setPrevTraj(prevTraj)
+
+        self.trajReach.addRHCartWP(DEFAULT_READY_RH_CARTPOS)
+        self.trajReach.addRHCartWP(DEFAULT_READY_RH_CARTPOS)
+        self.trajReach.addRHCartWP(DEFAULT_READY_RH_CARTPOS)
+        self.trajReach.addRHCartWP(DEFAULT_READY_RH_CARTPOS)
+        self.trajReach.addRHCartWP(DEFAULT_READY_RH_CARTPOS)
+
+        self.trajReach.addRHOrientWP(DEFAULT_READY_RH_ORIENT)
+        self.trajReach.addRHOrientWP(DEFAULT_READY_RH_ORIENT)
+        self.trajReach.addRHOrientWP(DEFAULT_READY_RH_ORIENT)
+        self.trajReach.addRHOrientWP(DEFAULT_READY_RH_ORIENT)
+        self.trajReach.addRHOrientWP(DEFAULT_READY_RH_ORIENT)
+
+        self.trajReach.addLHCartWP([0.3246641813985473, 0.2682061882567273, 1.1225699272165688])
+        self.trajReach.addLHCartWP([0.3177270681690219, 0.3198845479960411, 1.136781694923583])
+        self.trajReach.addLHCartWP([0.3088317409767023, 0.363519775835606, 1.0827597675139629])
+        self.trajReach.addLHCartWP([0.29807184157478334, 0.3772161004836367, 1.0270219378121788])
+        self.trajReach.addLHCartWP([0.2918545125781099, 0.34991820389649486, 0.9863700293580815])
+        self.trajReach.addLHCartWP([0.29255692823217366, 0.34084198509588765, 0.9831724553795478])
+
+        self.trajReach.addLHOrientWP([0.32089361951308976, 0.9413416405768688, 0.10441839240209305])
+        self.trajReach.addLHOrientWP([0.16439144818984558, 0.9633765309477029, 0.21185162586398712])
+        self.trajReach.addLHOrientWP([0.028918665108324762, 0.9933492536749694, 0.11144941019015663])
+        self.trajReach.addLHOrientWP([-0.05603352121971035, 0.9977910088313529, 0.03568399073858675])
+        self.trajReach.addLHOrientWP([-0.03995214634563561, 0.9962163249939348, -0.0771806958892949])
+        self.trajReach.addLHOrientWP([-0.03433786569158176, 0.9946388027076238, -0.09754262210998545])
+
+        self.trajReach.addPostureWP([0.0, 0.0,
+            0.17386677584046298, 0.12539250310249078, 0.060934820431286896, 1.5663050898114281, 1.6461457069178567, -0.40181249366128574, -0.04880691549830358,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+        self.trajReach.addPostureWP([0.0, 0.0,
+            0.1677675512804472, 0.224447745300377, 0.15433797631759755, 1.5717132266935983, 1.6111517733151375, -0.35294826480411035, -0.085908398420034,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+        self.trajReach.addPostureWP([0.0, 0.0,
+            0.1526751910469794, 0.2188680575507155, 0.2828065839579789, 1.3695905531596233, 1.6195247049271746, -0.34324694635241293, -0.08446081544643787,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+        self.trajReach.addPostureWP([0.0, 0.0,
+            0.1543815791153583, 0.2085277411491556, 0.32481246060961305, 1.1638376264262291, 1.6177784894365994, -0.3150608052980016, -0.11239488637632965,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+        self.trajReach.addPostureWP([0.0, 0.0,
+            0.1525887369111622, 0.13674069624568733, 0.32160443386112497, 1.0614261140207755, 1.6262169832908613, -0.33357504179176106, -0.132425204887847,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+        self.trajReach.addPostureWP([0.0, 0.0,
+            0.15226109565685464, 0.11433780146052336, 0.3205568250556371, 1.0630935368492642, 1.6249707384697154, -0.33414537021780233, -0.13028141115834954,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+
+        self.trajPush = Trajectory.Trajectory("Push", TIME_PUSH)
+        self.trajPush.setPrevTraj(self.trajReach)
+
+        self.trajPush.addRHCartWP(DEFAULT_READY_RH_CARTPOS)
+        self.trajPush.addRHCartWP(DEFAULT_READY_RH_CARTPOS)
+        self.trajPush.addRHCartWP(DEFAULT_READY_RH_CARTPOS)
+        self.trajPush.addRHCartWP(DEFAULT_READY_RH_CARTPOS)
+        self.trajPush.addRHCartWP(DEFAULT_READY_RH_CARTPOS)
+
+        self.trajPush.addRHOrientWP(DEFAULT_READY_RH_ORIENT)
+        self.trajPush.addRHOrientWP(DEFAULT_READY_RH_ORIENT)
+        self.trajPush.addRHOrientWP(DEFAULT_READY_RH_ORIENT)
+        self.trajPush.addRHOrientWP(DEFAULT_READY_RH_ORIENT)
+        self.trajPush.addRHOrientWP(DEFAULT_READY_RH_ORIENT)
+
+        self.trajPush.addLHCartWP([0.29182512742411687, 0.3370423367542359, 0.981642290657445])
+        self.trajPush.addLHCartWP([0.30340530291832885, 0.2819964609333591, 0.9759358333757678])
+        self.trajPush.addLHCartWP([0.31056714834970994, 0.19705303396896817, 0.9575657340481442])
+        self.trajPush.addLHCartWP([0.3180583129352426, 0.14849172695934806, 0.9827913572657686])
+        self.trajPush.addLHCartWP([0.3205842678737202, 0.09809343612954594, 0.987575421323227])
+        self.trajPush.addLHCartWP([0.3145868127841851, 0.021002988686408215, 0.9777725735393638])
+
+        self.trajPush.addLHOrientWP([-0.051629334244851104, 0.993490993000863, -0.10153845907631669])
+        self.trajPush.addLHOrientWP([0.09202482341232027, 0.9901679101652122, -0.10535151425104164])
+        self.trajPush.addLHOrientWP([0.14114845709697718, 0.9889513843420926, -0.04530201393979374])
+        self.trajPush.addLHOrientWP([0.14614792617743622, 0.9889138623065175, 0.02627083196324037])
+        self.trajPush.addLHOrientWP([0.20085089181138968, 0.9779455180637022, 0.05728422957225016])
+        self.trajPush.addLHOrientWP([0.5313835708658435, 0.8470153292322848, -0.014019010642297576])
+
+        self.trajPush.addPostureWP([0.0, 0.0,
+            0.14866835893544553, 0.10465978323322989, 0.3205429532232999, 1.0669327303566003, 1.6265951909448964, -0.31478208049877865, -0.15207491630144307,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+        self.trajPush.addPostureWP([0.0, 0.0,
+            0.15389034576699911, 0.037272935175235916, 0.20379883067880852, 1.0741415755776431, 1.5776894708680553, -0.31870534007955154, -0.21109392526973023,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+        self.trajPush.addPostureWP([0.0, 0.0,
+            0.1854388017420925, -0.0167404692381684, -0.05143448556112221, 0.9760520255984293, 1.5709973835867106, -0.09606940531745771, -0.39222604024861757,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+        self.trajPush.addPostureWP([0.0, 0.0,
+            0.3133147950559199, 0.17581662803835513, -0.6438641848519003, 1.0109646356067539, 2.0138586384716732, 0.2956921780742491, -0.1471624348083705,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+        self.trajPush.addPostureWP([0.0, 0.0,
+            0.32984528285973513, 0.050600815870581524, -0.6394071079297718, 0.9785603673018661, 1.8717555683977032, 0.3159826325308119, -0.1565561785588946,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+        self.trajPush.addPostureWP([0.0, 0.0,
+            0.5388601093664639, -0.03562601962327526, -1.1331442778677696, 0.7642302332765474, 2.2321638365639758, 0.22348831585647636, -0.39886717292755186,
+            -0.08569654146540764, 0.07021124925432169, 0,                    1.7194162945362514, 1.51, -0.07, -0.18])
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing TrajectoryLeftHandPush')
 
         if self.dreamerInterface.followTrajectory(self.trajReach):
             rospy.sleep(2.0) # pause 2 seconds
@@ -1229,16 +1363,36 @@ class AwaitCommandState(smach.State):
             else:
                 return "reset"
         elif cmd == Command.CMD_BEHAVIOR_SHAKE:
-            return self.goToReady(userdata, "execute_hand_shake")
+            # Only shake hands if we're not in idle
+            if not self.isIdle:
+                return self.goToReady(userdata, "execute_hand_shake")
+            else:
+                rospy.logerr("AwaitCommandState: Cannot shake hands when in idle state.")
+                return "done"
 
         elif cmd == Command.CMD_BEHAVIOR_WAVE:
-            return self.goToReady(userdata, "execute_wave")
+            # Only wave if we're not in idle
+            if not self.isIdle:
+                return self.goToReady(userdata, "execute_wave")
+            else:
+                rospy.logerr("AwaitCommandState: Cannot wave when in idle state.")
+                return "done"
 
         elif cmd == Command.CMD_BEHAVIOR_HOOKEM:
-            return self.goToReady(userdata, "execute_hookem_horns")
+            # Only make hook'em horns gesture if we're not in idle
+            if not self.isIdle:
+                return self.goToReady(userdata, "execute_hookem_horns")
+            else:
+                rospy.logerr("AwaitCommandState: Cannot do Hookem Horns when in idle state.")
+                return "done"
 
         elif cmd == Command.CMD_BEHAVIOR_PUSH:
-            return self.goToReady(userdata, "execute_push")
+            # Only make hook'em horns gesture if we're not in idle
+            if not self.isIdle:
+                return self.goToReady(userdata, "execute_push")
+            else:
+                rospy.logerr("AwaitCommandState: Cannot do Hookem Horns when in idle state.")
+                return "done"
         else:
             rospy.logerr("AwaitCommandState: Invalid 1 digit command {0}.".format(cmd))
             return "done"
@@ -1867,7 +2021,8 @@ class Demo9_CARL_Telemanipulation:
         shakeHandState = TrajectoryShakeHands(self.dreamerInterface, self.trajGoToReady)
         waveState = TrajectoryWave(self.dreamerInterface, self.trajGoToReady)
         hornsState = TrajectoryHookHorns(self.dreamerInterface, self.trajGoToReady)
-        pushState = TrajectoryPush(self.dreamerInterface, self.trajGoToReady, goBackToReadyState)
+        # pushState = TrajectoryRightHandPush(self.dreamerInterface, self.trajGoToReady, goBackToReadyState)
+        pushState = TrajectoryLeftHandPush(self.dreamerInterface, self.trajGoToReady, goBackToReadyState)
 
         resetState = ResetState(goBackToReadyState)
 
