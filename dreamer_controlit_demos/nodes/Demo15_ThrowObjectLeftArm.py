@@ -91,7 +91,7 @@ class TrajectoryState(smach.State):
         else:
             return "exit"
 
-class Demo14_Wild_Torso_Movements:
+class Demo15_ThrowObjectLeftArm:
     """
     The primary class that implement's the demo's FSM.
     """
@@ -273,7 +273,8 @@ class Demo14_Wild_Torso_Movements:
 
     def createFSM(self):
         # define the states
-        goToReadyState = TrajectoryState(self.dreamerInterface, self.trajGoToReady)
+        goToWindUpState = TrajectoryState(self.dreamerInterface, self.trajWindUp)
+        goToThrowState = TrajectoryState(self.dreamerInterface, self.trajThrow)
         goToIdleState = TrajectoryState(self.dreamerInterface, self.trajGoToIdle)
 
         # wire the states into a FSM
@@ -282,27 +283,25 @@ class Demo14_Wild_Torso_Movements:
         self.fsm.userdata.demoName = "none"
 
         with self.fsm:
-            smach.StateMachine.add("GoToReadyState", goToReadyState,
+            smach.StateMachine.add("GoToWindupState", goToWindUpState,
+                transitions={'done':'GoToThrowState',
+                             'exit':'exit'})
+            smach.StateMachine.add("GoToThrowState", goToThrowState,
                 transitions={'done':'GoToIdleState',
                              'exit':'exit'})
             smach.StateMachine.add("GoToIdleState", goToIdleState,
-                transitions={'done':'GoToReadyState',
+                transitions={'done':'exit',
                              'exit':'exit'})
 
     def run(self):
         """
-        Runs Demo 14.
+        Runs Demo 15.
         """
 
         if not self.dreamerInterface.connectToControlIt(DEFAULT_POSTURE):
             return
 
-        providePostureTraj = False
-        index = raw_input("Provide \"compatible\" posture trajectory? y/N\n")
-        if index == "Y" or index == "y":
-            providePostureTraj = True
-
-        self.createTrajectories(providePostureTraj)
+        self.createTrajectories()
         self.createFSM()
 
         # Create and start the introspection server
@@ -316,13 +315,13 @@ class Demo14_Wild_Torso_Movements:
 
         outcome = self.fsm.execute()
 
-        print "Demo 14 done, waiting until ctrl+c is hit..."
+        print "Demo 15 done, waiting until ctrl+c is hit..."
         rospy.spin()  # just to prevent this node from exiting
         sis.stop()
 
 
 # Main method
 if __name__ == "__main__":
-    rospy.init_node('Demo14_Wild_Torso_Movements', anonymous=True)
-    demo = Demo14_Wild_Torso_Movements()
+    rospy.init_node('Demo15_ThrowObjectLeftArm', anonymous=True)
+    demo = Demo15_ThrowObjectLeftArm)
     demo.run()
