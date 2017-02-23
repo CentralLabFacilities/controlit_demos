@@ -8,12 +8,13 @@ project(dreamer_controlit_demos)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
 find_package(catkin REQUIRED COMPONENTS
     cmake_modules
     # controlit_core
     controlit_cmake
-    controlit_dependency_addons
     controlit_trajectory_generators
+    controlit_dependency_addons
     geometry_msgs
     interactive_markers
     roscpp
@@ -21,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
     tf
 )
 
-list(APPEND CMAKE_MODULE_PATH ${controlit_cmake_DIR}/../../../../src/controlit/controlit_cmake/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../controlit/controlit_cmake/Modules)
 
 include(controlitbuild)
 controlit_build_init()

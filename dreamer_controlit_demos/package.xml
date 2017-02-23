@@ -31,7 +31,6 @@
     <depend>catkin</depend>
     <depend>geometry_msgs</depend>
     <depend>controlit_cmake</depend>
-    <depend>controlit_dependency_addons</depend>
     <depend>controlit_trajectory_generators</depend>
     <depend>interactive_markers</depend>
     <depend>roscpp</depend>
